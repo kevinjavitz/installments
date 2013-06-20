@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<installments_adminhtml_installmentsbackend_index>
+		<reference name="content">
+			<block type="installments/adminhtml_grid" name="installmentsbackend"/>
+		</reference>
+	</installments_adminhtml_installmentsbackend_index>
+	<adminhtml_sales_order_view>
+		<reference name="sales_order_tabs">
+			<action method="addTab">
+				<name>order_installments</name>
+				<block>installments/adminhtml_sales_order_view_tab_installments</block>
+			</action>
+		</reference>
+	</adminhtml_sales_order_view>
+	
+	<adminhtml_sales_order_create_index>
+		<reference name="js">
+			<block type="core/template" name="installments.form" template="installments/sales/order/create/form.phtml"></block>
+		</reference>
+		<reference name="data">
+            <action method="setTemplate">
+                <template>installments/sales/order/create/data.phtml</template>
+            </action>
+			<block type="installments/adminhtml_sales_order_create_installments" template="sales/order/create/abstract.phtml" name="installments">
+				<block type="installments/adminhtml_sales_order_create_installments_form" template="installments/sales/order/create/installments/form.phtml" name="form" />
+			</block>
+			<block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary"></block>
+        </reference>
+	</adminhtml_sales_order_create_index>
+	
+	<adminhtml_sales_order_create_load_block_data>
+		<reference name="data">
+            <action method="setTemplate">
+                <template>installments/sales/order/create/data.phtml</template>
+            </action>
+			<block type="installments/adminhtml_sales_order_create_installments" template="sales/order/create/abstract.phtml" name="installments">
+				<block type="installments/adminhtml_sales_order_create_installments_form" template="installments/sales/order/create/installments/form.phtml" name="form" />
+			</block>
+			<block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary"></block>
+        </reference>
+	</adminhtml_sales_order_create_load_block_data>
+	
+	<adminhtml_sales_order_create_load_block_installments_summary>
+        <reference name="content">
+            <block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary"></block>
+        </reference>
+    </adminhtml_sales_order_create_load_block_installments_summary>
+	
+</layout>

@@ -1,0 +1,103 @@
+<style type="text/css">
+.installments-summary-table {
+	border-collapse: collapse;
+	width: 100%;
+}
+.installments-summary-table th, .installments-summary-table td {
+	border: 1px solid #D9DDE3;
+	padding: 5px;
+}
+.installments-summary-table th {
+	background-color: #D9E5EE;
+}
+</style>
+<script type="text/javascript">
+	function switchInstallment(code) {
+		var request = new Ajax.Request(
+				'<?php echo $this->getUrl('installments/adminhtml_sales_order_create/save') ?>',
+				{
+					method: 'post',
+					onSuccess: onInstallmentSave,
+					onFailure: function() {
+						alert('<?php echo $this->__('Installment save error') ?>');
+					},
+					parameters: {
+						method: code
+					}
+				}
+		);
+	}
+	function onInstallmentSave(response) {
+		order.loadArea('installments_summary', true, {});
+	}
+	// load area hook
+	order.loadArea = function(area, indicator, params){
+		for (var i = 0; i < area.length; i++) {
+			areaCode = area[i];
+			if (areaCode == 'totals') {
+				area.push('installments_summary');
+				break;
+			}
+		}
+        var url = this.loadBaseUrl;
+        if (area) {
+            area = this.prepareArea(area);
+            url += 'block/' + area;
+        }
+        if (indicator === true) indicator = 'html-body';
+        params = this.prepareParams(params);
+        params.json = true;
+        if (!this.loadingAreas) this.loadingAreas = [];
+        if (indicator) {
+            this.loadingAreas = area;
+            new Ajax.Request(url, {
+                parameters:params,
+                loaderArea: indicator,
+                onSuccess: function(transport) {
+                    var response = transport.responseText.evalJSON();
+                    this.loadAreaResponseHandler(response);
+                }.bind(this)
+            });
+        }
+        else {
+            new Ajax.Request(url, {parameters:params,loaderArea: indicator});
+        }
+        if (typeof productConfigure != 'undefined' && area instanceof Array && area.indexOf('items' != -1)) {
+            productConfigure.clean('quote_items');
+        }
+    };
+	order.itemsUpdate = function(){
+        var area = ['sidebar', 'items', 'shipping_method', 'billing_method','totals', 'giftmessage', 'installments_summary'];
+        // prepare additional fields
+        var fieldsPrepare = {update_items: 1};
+        var info = $('order-items_grid').select('input', 'select', 'textarea');
+        for(var i=0; i<info.length; i++){
+            if(!info[i].disabled && (info[i].type != 'checkbox' || info[i].checked)) {
+                fieldsPrepare[info[i].name] = info[i].getValue();
+            }
+        }
+        fieldsPrepare = Object.extend(fieldsPrepare, this.productConfigureAddFields);
+        this.productConfigureSubmit('quote_items', area, fieldsPrepare);
+        this.orderItemChanged = false;
+    };
+	order.productGridAddSelected = function(){
+        if(this.productGridShowButton) Element.show(this.productGridShowButton);
+        var area = ['search', 'items', 'shipping_method', 'totals', 'giftmessage','billing_method', 'installments_summary'];
+        // prepare additional fields and filtered items of products
+        var fieldsPrepare = {};
+        var itemsFilter = [];
+        var products = this.gridProducts.toObject();
+        for (var productId in products) {
+            itemsFilter.push(productId);
+            var paramKey = 'item['+productId+']';
+            for (var productParamKey in products[productId]) {
+                paramKey += '['+productParamKey+']';
+                fieldsPrepare[paramKey] = products[productId][productParamKey];
+            }
+        }
+        this.productConfigureSubmit('product_to_add', area, fieldsPrepare, itemsFilter);
+        productConfigure.clean('quote_items');
+        this.hideArea('search');
+        this.gridProducts = $H({});
+    }
+</script>

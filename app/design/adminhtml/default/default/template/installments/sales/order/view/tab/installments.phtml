@@ -1,0 +1,280 @@
+<?php
+/** @var $this Itweb_Installments_Block_Adminhtml_Sales_Order_View_Tab_Installments */
+/** @var $Installment Itweb_Installments_Model_Installments */
+$Installment = $this->getInstallment();
+
+/** @var $CoreHelper Mage_Core_Helper_Data */
+$CoreHelper = Mage::helper('core');
+$hasUnpaid = false;
+?>
+<form id="payment_submit_form" name="installments" action="<?php echo $this->getMakePaymentUrl() ?>" method="post">
+<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />
+
+<div class="entry-edit">
+	<div class="entry-edit-head">
+		<h4 class="icon-head head-products">Overview</h4>
+	</div>
+</div>
+<fieldset>
+	<table cellspacing="4">
+		<tbody>
+		<tr>
+			<td>State:</td>
+			<td><?php echo $Installment->getStateLabel()?></td>
+		</tr>
+		<tr>
+			<td>Date Created:</td>
+			<td><?php echo $Installment->getCreatedAt() . ' == ' . $this->helper('core')->formatDate($Installment->getCreatedAt(), 'medium', true)?></td>
+		</tr>
+		<tr>
+			<td>Last Update:</td>
+			<td><?php echo ($Installment->getUpdatedAt() > 0 ? $CoreHelper->formatDate($Installment->getUpdatedAt(), 'medium', false) : 'No Updates') ?></td>
+		</tr>
+		<tr>
+			<td>Original Amount:</td>
+			<td><?php echo $CoreHelper->currency($Installment->getTotalDue(), true, false) ?></td>
+		</tr>
+		<tr>
+			<td>Total Remaining:</td>
+			<td><?php echo $CoreHelper->currency($Installment->getTotalDue() - $Installment->getTotalPaid() - $Installment->getTaxPaid() - $Installment->getShippingPaid(), true, false) ?></td>
+		</tr>
+		</tbody>
+	</table>
+	<table width="100%">
+		<thead>
+		<tr>
+			<th>
+				<div class="entry-edit">
+					<div class="entry-edit-head">
+						<h4 class="icon-head head-products">Payments</h4>
+					</div>
+				</div>
+			</th>
+			<th>
+				<div class="entry-edit">
+					<div class="entry-edit-head">
+						<h4 class="icon-head head-products">Refunds</h4>
+					</div>
+				</div>
+			</th>
+			<th>
+				<div class="entry-edit">
+					<div class="entry-edit-head">
+						<h4 class="icon-head head-products">Cancellations</h4>
+					</div>
+				</div>
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr>
+			<td>
+				<table>
+					<tbody>
+					<tr>
+						<td>Payments Paid:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getTotalPaid(), true, false) ?></td>
+					</tr>
+					<tr>
+						<td>Shipping Paid:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getShippingPaid(), true, false) ?></td>
+					</tr>
+					<tr>
+						<td>Taxes Paid:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getTaxPaid(), true, false) ?></td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+			<td>
+				<table>
+					<tbody>
+					<tr>
+						<td>Payments Refunded:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getTotalRefunded(), true, false) ?></td>
+					</tr>
+					<tr>
+						<td>Shipping Refunded:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getShippingRefunded(), true, false) ?></td>
+					</tr>
+					<tr>
+						<td>Taxes Refunded:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getTaxRefunded(), true, false) ?></td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+			<td>
+				<table>
+					<tbody>
+					<tr>
+						<td>Payments Canceled:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getTotalCanceled(), true, false) ?></td>
+					</tr>
+					<tr>
+						<td>Shipping Canceled:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getShippingCanceled(), true, false) ?></td>
+					</tr>
+					<tr>
+						<td>Taxes Canceled:</td>
+						<td><?php echo $CoreHelper->currency($Installment->getTaxCanceled(), true, false) ?></td>
+					</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</fieldset>
+
+<div class="entry-edit">
+	<div class="entry-edit-head">
+		<h4 class="icon-head head-products">Installments</h4>
+	</div>
+</div>
+<div class="grid np" id="installment_payments">
+	<div class="hor-scroll">
+		<table cellspacing="0" class="data order-tables">
+			<thead>
+			<tr class="headings">
+				<th style="width:10px;"></th>
+				<th>Amount Due</th>
+				<th>Estimated Tax Due</th>
+				<th>Amount Paid</th>
+				<th>Amount Refunded</th>
+				<th>Amount Canceled</th>
+				<th>Date Created</th>
+				<th>Last Update</th>
+				<th>Current State</th>
+			</tr>
+			</thead>
+			<tbody class="even">
+			<?php foreach($Installment->getPayments() as $k => $Payment): ?>
+				<?php /** @var $Payment Itweb_Installments_Model_Installmentspayments */ ?>
+			<tr class="border">
+				<td style="width:10px;">
+					<?php if ($Payment->isPaid() === false): $hasUnpaid = true; ?>
+					<input type="checkbox" name="installment_payment[]" value="<?php echo $Payment->getInstallmentPaymentId() ?>">
+					<?php endif; ?>
+				</td>
+				<td>
+					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountDue(), true, false) ?></span>
+				</td>
+				<td>
+					<span class="price"><?php echo $CoreHelper->currency(Itweb_Installments_Helper_Data::estimateTax($Payment->getAmountDue(), $Installment->getOrder()->getFullTaxInfo()), true, false) ?></span>
+				</td>
+				<td>
+					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountPaid(), true, false) ?></span>
+				</td>
+				<td>
+					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountRefunded(), true, false) ?></span>
+				</td>
+				<td>
+					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountCanceled(), true, false) ?></span>
+				</td>
+				<td><?php echo $CoreHelper->formatDate($Payment->getCreatedAt(), 'medium', false) ?></td>
+				<td><?php echo ($Payment->getUpdatedAt() > 0 ? $CoreHelper->formatDate($Payment->getUpdatedAt(), 'medium', false) : 'No Updates') ?></td>
+				<td><?php echo $Payment->getStateHtml() ?></td>
+			</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	</div>
+</div>
+<br>
+<?php if ($hasUnpaid): ?>
+<div class="entry-edit">
+	<div class="entry-edit-head">
+		<h4 class="icon-head head-products">Make A Payment</h4>
+	</div>
+</div>
+<fieldset>
+	<h4>Note: If you select checkboxes above then those will be paid, if you select none of them then only the first installment that is not paid will be paid.</h4>
+	<select id="payment_method" name="payment[method]" onchange="showPaymentForm(this.options[this.selectedIndex].value)">
+		<option value="">Please Select A Payment Method</option>
+		<?php
+		/** @var $PaymentHelper Mage_Payment_Helper_Data */
+		$PaymentHelper = $this->helper('payment');
+		$_methods = $PaymentHelper->getStoreMethods(Mage::app()->getStore());
+		foreach($_methods as $_method):
+			/** @var $_method Mage_Payment_Model_Method_Abstract */
+			echo '<option value="' . $_method->getCode() . '">' . $_method->getTitle() . '</option>';
+		endforeach;
+		?>
+	</select>
+
+	<div id="payment_method_forms" style="width: 280px;">
+		<?php
+		/** @var $PaymentHelper Mage_Payment_Helper_Data */
+		$PaymentHelper = $this->helper('payment');
+		$Installment->getOrder()->getQuoteId();
+		$_methods = $PaymentHelper->getStoreMethods(
+			$Installment->getOrder()->getStore(),
+			$Installment->getQuote()
+		);
+		foreach($_methods as $_method):
+			$_method->setData('info_instance', new Mage_Payment_Model_Info());
+			/** @var $_method Mage_Payment_Model_Method_Abstract */
+			echo $PaymentHelper->getMethodFormBlock($_method)
+				->toHtml();
+		endforeach;
+		?>
+		<button id="payment_submit_button" type="submit" style="display:none;">Submit Payment</button>
+	</div>
+</fieldset>
+	<?php endif; ?>
+</form>
+<script type="text/javascript">
+	var currentMethod = null;
+	var FormValidate;
+	function showPaymentForm(code) {
+		if (currentMethod){
+			$('payment_form_' + currentMethod).style.display = 'none';
+		}
+		if (code != ''){
+			$('payment_form_' + code).style.display = '';
+			$('payment_submit_button').style.display = '';
+			if (FormValidate){
+				FormValidate.reset();
+			}
+			FormValidate = new Validation('payment_form_' + code);
+		}
+		else {
+			$('payment_submit_button').style.display = 'none';
+		}
+		currentMethod = code;
+	}
+
+	$('payment_submit_form').observe('submit', function (event) {
+		if (FormValidate.validate()){
+			var PaymentForm = Form.getElements($('payment_form_' + currentMethod));
+			var PaymentMethod = $('payment_method');
+			PaymentForm.push(PaymentMethod);
+			var selectedinstallments = Form.getElements($('installment_payments'));
+			for(var i = 0; i < selectedinstallments.length; i++){
+				PaymentForm.push(selectedinstallments[i]);
+			}
+
+			var request = new Ajax.Request(
+					this.action,
+					{
+						method     : 'post',
+						onComplete : function () {
+						},
+						onSuccess  : function (response, data) {
+							if (response.responseJSON.success){
+								setLocation('<?php echo $this->getUrl('*/*/view', array('_current' => true))?>');
+							}else{
+								alert(response.responseJSON.response_message);
+							}
+						},
+						onFailure  : function () {
+							alert('failed');
+						},
+						parameters : Form.serializeElements(PaymentForm)
+					}
+			);
+		}
+		Event.stop(event);
+	});
+</script>

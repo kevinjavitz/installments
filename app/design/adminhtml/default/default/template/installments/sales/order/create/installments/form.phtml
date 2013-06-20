@@ -1,0 +1,8 @@
+<label for="installment_type"><em class="required">*</em><?php echo $this->__('Please Select How You Would Like Your Payment Processed') ?></label>
+<div>
+	<select class="required-entry" name="installment[method]" id="installment_type" onchange="switchInstallment(this.value);">
+		<option value="" <?php if(!$this->getCurrentInstallment()) { echo 'selected="selected"'; } ?>><?php echo $this->__('Please Choose An Option');?></option>
+		<option value="<?php echo Itweb_Installments_Helper_Data::PAY_ALL ?>"  <?php if($this->getCurrentInstallment() == Itweb_Installments_Helper_Data::PAY_ALL){echo 'selected="selected"';} ?>><?php echo $this->__(Itweb_Installments_Helper_Data::PAY_ALL_TEXT);?></option>
+		<option value="<?php echo Itweb_Installments_Helper_Data::PAY_INSTALLMENT ?>" <?php if($this->getCurrentInstallment() == Itweb_Installments_Helper_Data::PAY_INSTALLMENT){echo 'selected="selected"';} ?>><?php echo $this->__(Itweb_Installments_Helper_Data::PAY_INSTALLMENT_TEXT);?> (<?php echo Itweb_Installments_Helper_Data::getMaxInstallments() ?> Installments)</option>
+	</select>
+</div>

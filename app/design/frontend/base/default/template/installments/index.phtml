@@ -1,0 +1,298 @@
+<h1 class="page-title">View &amp; Pay Your Installment Agreements</h1>
+<?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
+<?php
+/** @var $this Itweb_Installments_Block_Index */
+$Installments = $this->getInstallments();
+if (sizeof($Installments) == 0){
+	?>
+<p>You currently have no installment agreements.</p>
+<?php
+}
+else {
+	?>
+<div class="std">
+	<h4>How To Make Payments:</h4>
+	<ol>
+		<li>Click On "Make Payments" for all agreements you wish to make a payment on</li>
+		<li>Click the checkboxes for all the payments you wish to make</li>
+		<li>Fill in your payment information at the bottom of the page</li>
+		<li>Click the "Submit Payment(s)" button and wait for the success/failure message</li>
+	</ol>
+</div>
+<p class="note-msg">Processing multiple payments at once may take a couple minutes, please be patient.<br>You will notice multiple charges on your card if you pay multiple payments, one for each selected payment.
+</p>
+<form name="payment_submit_form" id="payment_submit_form" action="<?php echo $this->getMakePaymentUrl() ?>" method="post">
+	<input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />
+
+	<div id="installment_payments">
+		<?php /** @var $Installment Itweb_Installments_Model_Installments */ ?>
+		<?php foreach($Installments as $Installment): ?>
+		<?php if (
+			$Installment->getOrder()->getState() == Mage_Sales_Model_Order::STATE_CLOSED ||
+			$Installment->getOrder()->getState() == Mage_Sales_Model_Order::STATE_CANCELED ||
+			$Installment->getOrder()->getState() == Mage_Sales_Model_Order::STATE_COMPLETE) continue; ?>
+		<?php $decorate[] = 'installment' . $Installment->getId() . '_table'; ?>
+		<div class="box-account box-installment">
+			<div class="box-head">
+				<h2>Order #<?php echo $Installment->getOrder()->getIncrementId() ?></h2>
+		<span style="float:right">
+			<b><?php echo $this->__('Order Status') ?>:</b> <?php echo $Installment->getOrder()->getStatusLabel() ?>
+		</span>
+			</div>
+			<div class="box">
+				<div class="box-title">
+					<h3>Agreement Details</h3>
+				</div>
+				<div class="box-content">
+					<table class="data-table">
+						<thead>
+						<tr class="first last">
+							<th>Agreement Total</th>
+							<th>Total Paid</th>
+							<th># Of Installments</th>
+							<th>Status</th>
+							<th>Last Update</th>
+							<th>Actions</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr class="first last odd">
+							<td><?php echo Mage::helper('core')->currency($Installment->getTotalDue()) ?></td>
+							<td><?php echo Mage::helper('core')->currency($Installment->getTotalPaid() + $Installment->getTaxPaid() + $Installment->getShippingPaid()) ?></td>
+							<td><?php echo $Installment->getNumOfInstallments() ?></td>
+							<td><?php echo $Installment->getStateLabel() ?></td>
+							<td><?php echo Mage::helper('core')->formatDate($Installment->getUpdatedAt(), 'medium', false) ?></td>
+							<td class="last">
+								<a href="Javascript:void(0)" onclick="$('payments<?php echo $Installment->getId()?>').toggle();"><?php echo $this->__($Installment->getState() == Itweb_Installments_Model_Installments::STATUS_CLOSED ? 'Show Payments' : 'Make Payment') ?></a>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="box" id="payments<?php echo $Installment->getId()?>" style="display:none;margin-top:15px;">
+				<div class="box-title">
+					<h3>Payments</h3>
+				</div>
+				<div class="box-content">
+					<table class="data-table" id="installment<?php echo $Installment->getId() ?>_table">
+						<colgroup>
+							<col width="16">
+							<col width="1">
+							<col width="1">
+							<col width="1">
+							<col>
+						</colgroup>
+						<thead>
+						<tr class="first last">
+							<th></th>
+							<th>#</th>
+							<th><span class="nobr">Amount Due</span></th>
+							<th>Status</th>
+							<th>Last Update</th>
+						</tr>
+						</thead>
+						<tbody>
+							<?php foreach($Installment->getPayments() as $k => $Payment): /** @var $Payment Itweb_Installments_Model_Installmentspayments */ ?>
+						<tr class="<?php echo ($k % 2 ? 'even' : 'odd') ?><?php echo ($k == 0 ? ' first' : ($k == ($Installment->getNumOfInstallments() - 1) ? ' last' : '')) ?>">
+							<td>
+								<?php if ($Payment->isPaid() === false): ?>
+								<input type="checkbox" name="installment_payment[<?php echo $Installment->getOrder()->getId() ?>][]" value="<?php echo $Payment->getInstallmentPaymentId() ?>">
+								<?php endif; ?>
+							</td>
+							<td><?php echo ($k + 1) ?></td>
+							<td class="nobr">
+								<?php echo Mage::helper('core')->currency($Payment->getAmountDue()) ?>
+								<?php
+								if ($Payment->isPaid() === false):
+									echo sprintf(' + %s Est. Tax', Itweb_Installments_Helper_Data::estimateTax($Payment->getAmountDue(), $Installment->getOrder()->getFullTaxInfo()));
+								endif;
+								?>
+							</td>
+							<td><em class="nobr"><?php echo $Payment->getStateHtml() ?></em></td>
+							<td class="last"><?php echo ($Payment->getUpdatedAt() > 0 ? Mage::helper('core')->formatDate($Payment->getUpdatedAt(), 'medium', false) : '') ?></td>
+						</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<?php endforeach; ?>
+	</div>
+	<div class="box-account box-payment-method" style="margin-top:15px;">
+		<div class="box-head">
+			<h2>Payment Method Selection</h2>
+		</div>
+		<div class="box">
+			<div class="box-content">
+				<fieldset>
+					<select id="payment_method" name="payment[method]" onchange="showPaymentForm(this.options[this.selectedIndex].value)">
+						<option value="">Please Select A Payment Method</option>
+						<?php
+						/** @var $PaymentHelper Mage_Payment_Helper_Data */
+						$PaymentHelper = $this->helper('payment');
+						$_methods = $PaymentHelper->getStoreMethods(Mage::app()->getStore());
+						foreach($_methods as $_method):
+							/** @var $_method Mage_Payment_Model_Method_Abstract */
+							echo '<option value="' . $_method->getCode() . '">' . $_method->getTitle() . '</option>';
+						endforeach;
+						?>
+					</select>
+
+					<div id="payment_method_forms" style="width: 280px;">
+						<?php
+						/** @var $PaymentHelper Mage_Payment_Helper_Data */
+						$PaymentHelper = $this->helper('payment');
+						$Installment->getOrder()->getQuoteId();
+						$_methods = $PaymentHelper->getStoreMethods(
+							Mage::app()->getStore()
+						);
+						foreach($_methods as $_method):
+							$_method->setData('info_instance', new Mage_Payment_Model_Info());
+							/** @var $_method Mage_Payment_Model_Method_Abstract */
+							echo $PaymentHelper->getMethodFormBlock($_method)
+								->toHtml();
+						endforeach;
+						?>
+						<button class="button" id="payment_submit_button" type="submit" style="display:none;">
+						<span>
+							<span>Submit Payment</span>
+						</span>
+						</button>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+	</div>
+</form>
+<style>
+	#loading-process {
+		position    : absolute;
+		top         : 45%;
+		left        : 50%;
+		margin-left : -60px;
+		border      : 2px solid #f1af73;
+		padding     : 15px 60px;
+		background  : #fff4e9;
+		color       : #d85909;
+		font-size   : 1.1em;
+		font-weight : bold;
+		text-align  : center;
+		z-index     : 501;
+	}
+
+	#loading-mask {
+		background : url(../images/blank.gif) repeat;
+		position    : absolute;
+		color       : #d85909;
+		font-size   : 1.1em;
+		font-weight : bold;
+		text-align  : center;
+		opacity     : 0.80;
+		-ms-filter  : "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+		/* IE8 */
+		z-index     : 500;
+	}
+
+	#loading-mask .loader {
+		position    : fixed;
+		top         : 45%;
+		left        : 50%;
+		width       : 300px;
+		margin-left : -105px;
+		padding     : 15px 30px;
+		background  : #fff4e9;
+		border      : 2px solid #f1af73;
+		color       : #d85909;
+		font-weight : bold;
+		text-align  : center;
+		z-index     : 1000;
+	}
+</style>
+<div id="loading-mask" style="display: none;">
+	<div class="loader" id="loading-mask-loader">
+		<img src="<?php echo str_replace("index.php/", "", $this->getUrl()) ?>skin/adminhtml/default/default/images/ajax-loader-tr.gif" alt="<?php echo $this->__('Loading...') ?>" /><?php echo $this->__('Processing Payment(s)....Please Wait') ?>
+	</div>
+	<div id="loading-mask"></div>
+</div>
+
+<script type="text/javascript">
+	var FORM_KEY = '<?php echo Mage::getSingleton('core/session')->getFormKey();?>';
+</script>
+<script src="<?php echo $this->getJsUrl() ?>mage/adminhtml/loader.js" type="text/javascript"></script>
+<script type="text/javascript">
+	var currentMethod = null;
+	var FormValidate;
+	function showPaymentForm(code) {
+		if (currentMethod){
+			if ($('payment_form_' + currentMethod)){
+				$('payment_form_' + currentMethod).style.display = 'none';
+			}
+		}
+		if (code != ''){
+			if ($('payment_form_' + code)){
+				$('payment_form_' + code).style.display = '';
+			}
+			$('payment_submit_button').style.display = '';
+			if (FormValidate){
+				FormValidate.reset();
+			}
+			if ($('payment_form_' + code)){
+				FormValidate = new Validation('payment_form_' + code);
+			}
+			else {
+				FormValidate = null;
+			}
+		}
+		else {
+			$('payment_submit_button').style.display = 'none';
+		}
+		currentMethod = code;
+	}
+
+	$('payment_submit_form').observe('submit', function (event) {
+		if (!FormValidate || FormValidate.validate()){
+			var PaymentForm = [$('payment_method')];
+			if ($('payment_form_' + currentMethod)){
+				var MethodForm = Form.getElements($('payment_form_' + currentMethod));
+				for(var i = 0; i < MethodForm.length; i++){
+					PaymentForm.push(MethodForm[i]);
+				}
+			}
+
+			var selectedinstallments = Form.getElements($('installment_payments'));
+			for(var i = 0; i < selectedinstallments.length; i++){
+				PaymentForm.push(selectedinstallments[i]);
+			}
+
+			Element.show('loading-mask');
+			$('payment_submit_button').addClassName('disabled').disable();
+			var request = new Ajax.Request(
+					this.action,
+					{
+						method     : 'post',
+						onComplete : function () {
+							Element.hide('loading-mask');
+							$('payment_submit_button').removeClassName('disabled').enable();
+						},
+						onSuccess  : function (response, data) {
+							if (response.responseJSON.success){
+								setLocation('<?php echo $this->getUrl('customer/account')?>');
+							}
+							else {
+								alert(response.responseJSON.response_message);
+							}
+						},
+						onFailure  : function () {
+							alert('failed');
+						},
+						parameters : Form.serializeElements(PaymentForm)
+					}
+			);
+		}
+		Event.stop(event);
+	});
+</script>
+<?php
+}

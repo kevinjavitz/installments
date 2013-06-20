@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<installments_index_index>
+		<update handle="customer_account"></update>
+		<reference name="customer_account_navigation">
+			<action method="addLink" translate="label" module="customer">
+				<name>installments</name>
+				<path>installments/index</path>
+				<label>My Installment Agreements</label>
+			</action>
+		</reference>
+		<reference name="content">
+			<block type="installments/index" name="installments_index" template="installments/index.phtml"/>
+		</reference>
+	</installments_index_index>
+	<checkout_onepage_index>
+		<reference name="checkout.onepage">
+			<block type="installments/checkout_onepage_installment" name="checkout.onepage.installment" as="installment" template="installments/checkout/onepage/installment.phtml"/>
+		</reference>
+		<reference name="checkout.progress">
+			<action method="setTemplate">
+				<template>installments/checkout/onepage/progress.phtml</template>
+			</action>
+		</reference>
+	</checkout_onepage_index>
+	<checkout_onepage_progress>  <!-- Change the template of progress block -->
+		<reference name="root">
+			<action method="setTemplate">
+				<template>installments/checkout/onepage/progress.phtml</template>
+			</action>
+		</reference>
+	</checkout_onepage_progress>
+	<customer_account>
+		<reference name="customer_account_navigation">
+			<action method="addLink" translate="label" module="customer">
+				<name>installments</name>
+				<path>installments/index</path>
+				<label>My Installment Agreements</label>
+			</action>
+		</reference>
+	</customer_account>
+</layout>
+	

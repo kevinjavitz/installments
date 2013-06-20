@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Itweb_Installments>
+      <active>true</active>
+      <codePool>local</codePool>
+      <version>0.1.0</version>
+    </Itweb_Installments>
+  </modules>
+</config>

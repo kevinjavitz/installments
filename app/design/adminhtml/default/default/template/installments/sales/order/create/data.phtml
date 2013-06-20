@@ -1,0 +1,14 @@
+<?php
+if ($this->helper('installments')->isRentalInstalled()) {
+	$templateFile = Mage::getDesign()->getTemplateFilename('installments/sales/order/create/data/payperrentals.phtml', array(
+		'_area' => $this->getArea(),
+		'_relative' => false
+	));
+} else {
+	$templateFile = Mage::getDesign()->getTemplateFilename('installments/sales/order/create/data/default.phtml', array(
+		'_area' => $this->getArea(),
+		'_relative' => false
+	));
+}
+require($templateFile);
+?>

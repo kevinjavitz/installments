@@ -1,0 +1,54 @@
+<?php
+/** @var $this Mage_Checkout_Block_Onepage */
+$Quote = $this->getQuote();
+$Total = $Quote->getGrandTotal();
+$Breakdown = Itweb_Installments_Helper_Data::getInstallmentBreakdown($Quote);
+?>
+
+<div class="entry-edit-head"><h4><?php echo $this->__('Your installments are listed below') ?></h4></div>
+<fieldset><div id="installments-summary">
+<?php if ($Quote->getUseInstallments() == Itweb_Installments_Helper_Data::PAY_INSTALLMENT && isset($Breakdown['installments']) && count($Breakdown['installments']) ) : ?>
+	<table class="installments-summary-table" id="installments-summary-table">
+		<thead>
+		<tr class="last">
+			<th class="a-center"></th>
+			<th class="a-center">Amount</th>
+			<th class="a-center">Paid When</th>
+		</tr>
+		</thead>
+		<tbody>
+		<?php
+		foreach($Breakdown['installments'] as $k => $toPay):
+			if ($k == 0){
+				$installmentText = 'Initial Installment';
+				$paidWhen = 'Now';
+			}
+			elseif ($k == (sizeof($Breakdown['installments']) - 1)) {
+				$installmentText = 'Final Installment';
+				$paidWhen = 'On Pickup';
+			}
+			else {
+				$installmentText = 'Installment #' . ($k+1);
+				$paidWhen = 'Later';
+			}
+			?>
+		<tr>
+			<td><?php echo $installmentText ?>:</td>
+			<td><?php
+				echo Mage::helper('core')->currency($toPay, true, false);
+				if ($k == 0 && $Breakdown['shipping_cost'] > 0){
+					echo sprintf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false));
+				}
+				echo sprintf(' + %s Est. Tax', Mage::helper('core')->currency($Breakdown['taxes'][$k], true, false));
+				?></td>
+			<td>Paid <?php echo $paidWhen ?></td>
+		</tr>
+			<?php endforeach; ?>
+		</tbody>
+	</table>
+<?php else: ?>
+<p><?php echo $this->__('No installments information.') ?></p>
+<?php endif; ?>
+</div></fieldset>
+
+

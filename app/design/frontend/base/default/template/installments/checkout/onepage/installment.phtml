@@ -1,0 +1,102 @@
+<form id="co-installment-form" action="">
+	<fieldset>
+		<ul class="form-list">
+			<li id="installment-form">
+				<fieldset>
+					<ul>
+						<li class="wide">
+							<label for="installment_type" class="required"><em>*</em><?php echo $this->__('Please Select How You Would Like Your Payment Processed') ?></label>
+							<div class="input-box">
+								<select class="required-entry" name="installment[method]" id="installment_type">
+									<option value=''><?php echo $this->__('Please Choose An Option');?></option>
+									<option value='<?php echo Itweb_Installments_Helper_Data::PAY_ALL ?>' <?php if($this->getQuote()->getData('installment') == Itweb_Installments_Helper_Data::PAY_ALL){echo 'selected="selected"';} ?>><?php echo $this->__(Itweb_Installments_Helper_Data::PAY_ALL_TEXT);?></option>
+									<option value='<?php echo Itweb_Installments_Helper_Data::PAY_INSTALLMENT ?>' <?php if($this->getQuote()->getData('installment') == Itweb_Installments_Helper_Data::PAY_INSTALLMENT){echo 'selected="selected"';} ?>><?php echo $this->__(Itweb_Installments_Helper_Data::PAY_INSTALLMENT_TEXT);?> (<?php echo Itweb_Installments_Helper_Data::getMaxInstallments() ?> Installments)</option>
+								</select>
+							</div>
+						</li>
+					</ul>
+				</fieldset>
+			</li>
+		</ul>
+		<div class="buttons-set" id="installment-buttons-container">
+			<p class="required"><?php echo $this->__('* Required Fields') ?></p>
+			<button type="button" title="<?php echo $this->__('Continue') ?>" class="button" onclick="installment.save()"><span><span><?php echo $this->__('Continue') ?></span></span></button>
+        <span class="please-wait" id="installment-please-wait" style="display:none;">
+            <img src="<?php echo $this->getSkinUrl('images/opc-ajax-loader.gif') ?>" alt="<?php echo $this->__('Loading next step...') ?>" title="<?php echo $this->__('Loading next step...') ?>" class="v-middle" /> <?php echo $this->__('Loading next step...') ?>
+        </span>
+		</div>
+	</fieldset>
+</form>
+<script type="text/javascript">
+	// billing
+	var InstallmentClass = Class.create();
+	InstallmentClass.prototype = {
+		initialize: function(form, saveUrl){
+			this.form = form;
+			if ($(this.form)) {
+				$(this.form).observe('submit', function(event){this.save();Event.stop(event);}.bind(this));
+			}
+			this.saveUrl = saveUrl;
+			this.onSave = this.nextStep.bindAsEventListener(this);
+			this.onComplete = this.resetLoadWaiting.bindAsEventListener(this);
+		},
+
+		save: function(){
+			if (checkout.loadWaiting!=false) return;
+
+			var validator = new Validation(this.form);
+			if (validator.validate()) {
+				checkout.setLoadWaiting('installment');
+
+				var request = new Ajax.Request(
+						this.saveUrl,
+						{
+							method: 'post',
+							onComplete: this.onComplete,
+							onSuccess: this.onSave,
+							onFailure: checkout.ajaxFailure.bind(checkout),
+							parameters: Form.serialize(this.form)
+						}
+				);
+			}
+		},
+
+		resetLoadWaiting: function(transport){
+			checkout.setLoadWaiting(false);
+			document.body.fire('installment-request:completed', {transport: transport});
+		},
+
+		/**
+		 This method recieves the AJAX response on success.
+		 There are 3 options: error, redirect or html with shipping options.
+		 */
+		nextStep: function(transport){
+			if (transport && transport.responseText){
+				try{
+					response = eval('(' + transport.responseText + ')');
+				}
+				catch (e) {
+					response = {};
+				}
+			}
+
+			if (response.error){
+				if ((typeof response.message) == 'string') {
+					alert(response.message);
+				} else {
+					alert(response.message.join("\n"));
+				}
+
+				return false;
+			}
+
+			checkout.setStepResponse(response);
+		}
+	}
+
+	//<![CDATA[
+	var installment = new InstallmentClass('co-installment-form', '<?php echo $this->getUrl('checkout/onepage/saveInstallment') ?>');
+	var installmentForm = new VarienForm('co-installment-form');
+	//]]>
+</script>
+
