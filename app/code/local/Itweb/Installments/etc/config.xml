@@ -89,6 +89,7 @@
 			</checkout>
 			<sales>
 				<rewrite>
+					<order>Itweb_Installments_Model_Sales_Order</order>
 					<service_order>Itweb_Installments_Model_Sales_Service_Order</service_order>
 					<order_payment>Itweb_Installments_Model_Sales_Order_Payment</order_payment>
 					<order_invoice>Itweb_Installments_Model_Sales_Order_Invoice</order_invoice>

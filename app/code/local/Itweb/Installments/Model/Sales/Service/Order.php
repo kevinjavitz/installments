@@ -11,7 +11,7 @@ class Itweb_Installments_Model_Sales_Service_Order
 	 *
 	 * @return Mage_Sales_Model_Order_Invoice
 	 */
-	public function prepareInvoice($qtys = array())
+	public function prepareInvoice($qtys = array(), $simulate = false)
 	{
 		if ($this->_order->getUseInstallments() > 0){
 			$invoice = $this->_convertor->toInvoice($this->_order);
@@ -41,7 +41,9 @@ class Itweb_Installments_Model_Sales_Service_Order
 			}
 			$invoice->setTotalQty($totalQty);
 			$invoice->collectTotals();
-			$this->_order->getInvoiceCollection()->addItem($invoice);
+			if (!$simulate) {
+				$this->_order->getInvoiceCollection()->addItem($invoice);
+			}
 			return $invoice;
 		}
 		else {

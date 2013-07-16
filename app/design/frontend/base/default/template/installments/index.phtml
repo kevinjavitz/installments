@@ -277,6 +277,9 @@ else {
 							$('payment_submit_button').removeClassName('disabled').enable();
 						},
 						onSuccess  : function (response, data) {
+							if (!response.responseJSON) {
+								response.responseJSON = response.responseText.evalJSON(true);
+							}
 							if (response.responseJSON.success){
 								setLocation('<?php echo $this->getUrl('customer/account')?>');
 							}

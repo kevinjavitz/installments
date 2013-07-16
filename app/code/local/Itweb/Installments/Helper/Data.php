@@ -343,24 +343,62 @@ class Itweb_Installments_Helper_Data
 			$Order->addPayment($PaymentMethod);
 
 			try {
-				if ($InstallmentAgreement->getState() == Itweb_Installments_Model_Installments::STATUS_OPEN_MANUAL){
+				if ($InstallmentAgreement->getState() == Itweb_Installments_Model_Installments::STATUS_OPEN_MANUAL || $InstallmentAgreement->getState() == Itweb_Installments_Model_Installments::STATUS_OPEN){
 					$PaymentAmount = $InstallmentAgreement->getPayment($v)->getAmountDue();
 					$PaymentMethod->setAmountAuthorized($PaymentAmount);
 					$PaymentMethod->setBaseAmountAuthorized($PaymentAmount);
 					$PaymentMethod->setAmountPaid($PaymentAmount);
 					$PaymentMethod->setBaseAmountPaid($PaymentAmount);
 					$PaymentMethod->setBaseAmountPaidOnline($PaymentAmount);
+					
+					// Invoice
+					$invoice = false;
+					if ($Order->canInvoice()) {
+						$simulateInvoice = Mage::getModel('sales/service_order', $Order)->prepareInvoice(array(), true);
+						// Get items and qty
+						$items = $simulateInvoice->getAllItems();
+						$invoiceData = array('items' => array());
+						foreach ($items AS $item) {
+							if ($item->getOrderItem()->getParentItem()) continue;
+							$invoiceData['items'][$item->getOrderItemId()] = $item->getQty()*1;
+						}
+						// Prepare invoice again with qty data
+						$invoice = Mage::getModel('sales/service_order', $Order)->prepareInvoice($invoiceData['items']);
+						$invoice->register();
+						$invoice->setEmailSent(true);
+						$invoice->getOrder()->setCustomerNoteNotify(true);
+						$invoice->getOrder()->setIsInProcess(true);
+						$transactionSave = Mage::getModel('core/resource_transaction')
+							->addObject($invoice)
+							->addObject($invoice->getOrder());
+						if (!empty($invoiceData['do_shipment']) || (int) $invoice->getOrder()->getForcedDoShipmentWithInvoice()) {
+							$shipment = $this->_prepareShipment($invoice, $invoiceData['items']);
+							if ($shipment) {
+								$shipment->setEmailSent($invoice->getEmailSent());
+								$transactionSave->addObject($shipment);
+							}
+						}
+						$transactionSave->save();
+					}
+					
+					if (!$invoice) {
+						$Order->setTotalPaid($Order->getTotalPaid() + $PaymentAmount);
+						$Order->setBaseTotalPaid($Order->getTotalPaid() + $PaymentAmount);
+						$Order->setTotalDue($Order->getTotalDue() - $PaymentAmount);
+						$Order->setBaseTotalDue($Order->getTotalDue() - $PaymentAmount);
 
-					$Order->setTotalPaid($Order->getTotalPaid() + $PaymentAmount);
-					$Order->setBaseTotalPaid($Order->getTotalPaid() + $PaymentAmount);
-					$Order->setTotalDue($Order->getTotalDue() - $PaymentAmount);
-					$Order->setBaseTotalDue($Order->getTotalDue() - $PaymentAmount);
-
-					$PaymentMethod->getMethodInstance()
-						->setStore($Order->getStoreId())
-						->capture($PaymentMethod, $PaymentAmount);
+					}
+					
+					$methodInstance = $PaymentMethod->getMethodInstance()
+						->setStore($Order->getStoreId());
+					if ($methodInstance->canCapture()) {
+						$methodInstance->capture($PaymentMethod, $PaymentAmount);
+					}
 
 					$AgreementPayment = $InstallmentAgreement->getPayment($v);
+					
+					
+					
 
 					$Observer = new Itweb_Installments_Model_Observer();
 					$Observer->payOnPayment(
@@ -390,6 +428,33 @@ class Itweb_Installments_Helper_Data
 		}
 		$Order->save();
 	}
+	
+	/**
+     * Prepare shipment
+     *
+     * @param Mage_Sales_Model_Order_Invoice $invoice
+     * $param array $savedQtys
+     * @return Mage_Sales_Model_Order_Shipment
+     */
+	protected function _prepareShipment($invoice, $savedQtys)
+    {
+        $shipment = Mage::getModel('sales/service_order', $invoice->getOrder())->prepareShipment($savedQtys);
+        if (!$shipment->getTotalQty()) {
+            return false;
+        }
+
+
+        $shipment->register();
+        $tracks = $this->getRequest()->getPost('tracking');
+        if ($tracks) {
+            foreach ($tracks as $data) {
+                $track = Mage::getModel('sales/order_shipment_track')
+                    ->addData($data);
+                $shipment->addTrack($track);
+            }
+        }
+        return $shipment;
+    }
 
 	/**
 	 * @param $customerId

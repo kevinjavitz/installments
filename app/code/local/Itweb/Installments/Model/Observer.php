@@ -157,12 +157,13 @@ class Itweb_Installments_Model_Observer
 			if (isset($Breakdown[$Item->getOrderItem()->getId()])){
 				$Increment = $Breakdown[$Item->getOrderItem()->getId()]['increments'];
 				$NumberOfPayments = $Item->getQty() / $Increment;
-				$ItemsArr[$Item->getId()] = $NumberOfPayments;
+				$ItemsArr[$Item->getId()] = (int)round($NumberOfPayments);
 			}
 			else {
 				Mage::throwException('Unknown product being invoiced, does not exists in the original order!');
 			}
 		}
+		
 
 		foreach($Agreement->getPayments() as $k => $Payment){
 			if ($Payment->isPaid() === false){
@@ -173,11 +174,12 @@ class Itweb_Installments_Model_Observer
 						continue;
 					}
 
+
 					/** @var $Item Itweb_Installments_Model_Sales_Order_Invoice_Item */
 					$Item = $Invoice->getItemById($ItemId);
 					if ($Payment->itemIsPaid($Item) === false){
 						$HadPayment = true;
-
+						
 						$ItemBreakdown = $Breakdown[$Item->getOrderItem()->getId()];
 
 						$this->payOnPayment($Agreement, $Payment, $ItemBreakdown['payments'][$k]);

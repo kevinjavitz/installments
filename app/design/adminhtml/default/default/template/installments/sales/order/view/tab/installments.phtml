@@ -2,6 +2,7 @@
 /** @var $this Itweb_Installments_Block_Adminhtml_Sales_Order_View_Tab_Installments */
 /** @var $Installment Itweb_Installments_Model_Installments */
 $Installment = $this->getInstallment();
+$Breakdown = Itweb_Installments_Helper_Data::getInstallmentBreakdown($this->getOrder());
 
 /** @var $CoreHelper Mage_Core_Helper_Data */
 $CoreHelper = Mage::helper('core');
@@ -158,13 +159,24 @@ $hasUnpaid = false;
 					<?php endif; ?>
 				</td>
 				<td>
-					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountDue(), true, false) ?></span>
+					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountDue(), true, false) ?><?php
+						if ($k == 0 && $Breakdown['shipping_cost'] > 0){
+							echo sprintf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false));
+						}
+					?></span>
 				</td>
 				<td>
 					<span class="price"><?php echo $CoreHelper->currency(Itweb_Installments_Helper_Data::estimateTax($Payment->getAmountDue(), $Installment->getOrder()->getFullTaxInfo()), true, false) ?></span>
 				</td>
 				<td>
-					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountPaid(), true, false) ?></span>
+					<span class="price">
+						<?php echo $CoreHelper->currency($Payment->getAmountPaid(), true, false) ?>
+						<?php
+							if ($k == 0 && $Breakdown['shipping_cost'] > 0 && $Payment->getAmountPaid() > 0){
+								echo sprintf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false));
+							}
+						?>
+					</span>
 				</td>
 				<td>
 					<span class="price"><?php echo $CoreHelper->currency($Payment->getAmountRefunded(), true, false) ?></span>
@@ -262,6 +274,9 @@ $hasUnpaid = false;
 						onComplete : function () {
 						},
 						onSuccess  : function (response, data) {
+							if (!response.responseJSON) {
+								response.responseJSON = response.responseText.evalJSON(true);
+							}
 							if (response.responseJSON.success){
 								setLocation('<?php echo $this->getUrl('*/*/view', array('_current' => true))?>');
 							}else{
