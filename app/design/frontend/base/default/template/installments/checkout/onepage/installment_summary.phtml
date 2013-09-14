@@ -79,8 +79,6 @@ $Breakdown = Itweb_Installments_Helper_Data::getInstallmentBreakdown($Quote);
                         evalScripts: false,
                         onSuccess: function(transport) {
                             var response = transport.responseText.evalJSON();
-                            console.log(response);
-                            console.log(response.updateSummary);
                             if(response.error !== undefined){
                                 alert(response.error);
                             } else if(response.updateSummary !== undefined) {
