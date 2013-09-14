@@ -31,68 +31,71 @@
 	// billing
 	var InstallmentClass = Class.create();
 	InstallmentClass.prototype = {
-		initialize: function(form, saveUrl){
-			this.form = form;
-			if ($(this.form)) {
-				$(this.form).observe('submit', function(event){this.save();Event.stop(event);}.bind(this));
-			}
-			this.saveUrl = saveUrl;
-			this.onSave = this.nextStep.bindAsEventListener(this);
-			this.onComplete = this.resetLoadWaiting.bindAsEventListener(this);
-		},
+        initialize: function (form, saveUrl) {
+            this.form = form;
+            if ($(this.form)) {
+                $(this.form).observe('submit', function (event) {
+                    this.save();
+                    Event.stop(event);
+                }.bind(this));
+            }
+            this.saveUrl = saveUrl;
+            this.onSave = this.nextStep.bindAsEventListener(this);
+            this.onComplete = this.resetLoadWaiting.bindAsEventListener(this);
+        },
 
-		save: function(){
-			if (checkout.loadWaiting!=false) return;
+        save: function () {
+            if (checkout.loadWaiting != false) return;
 
-			var validator = new Validation(this.form);
-			if (validator.validate()) {
-				checkout.setLoadWaiting('installment');
+            var validator = new Validation(this.form);
+            if (validator.validate()) {
+                checkout.setLoadWaiting('installment');
 
-				var request = new Ajax.Request(
-						this.saveUrl,
-						{
-							method: 'post',
-							onComplete: this.onComplete,
-							onSuccess: this.onSave,
-							onFailure: checkout.ajaxFailure.bind(checkout),
-							parameters: Form.serialize(this.form)
-						}
-				);
-			}
-		},
+                var request = new Ajax.Request(
+                    this.saveUrl,
+                    {
+                        method: 'post',
+                        onComplete: this.onComplete,
+                        onSuccess: this.onSave,
+                        onFailure: checkout.ajaxFailure.bind(checkout),
+                        parameters: Form.serialize(this.form)
+                    }
+                );
+            }
+        },
 
-		resetLoadWaiting: function(transport){
-			checkout.setLoadWaiting(false);
-			document.body.fire('installment-request:completed', {transport: transport});
-		},
+        resetLoadWaiting: function (transport) {
+            checkout.setLoadWaiting(false);
+            document.body.fire('installment-request:completed', {transport: transport});
+        },
 
-		/**
-		 This method recieves the AJAX response on success.
-		 There are 3 options: error, redirect or html with shipping options.
-		 */
-		nextStep: function(transport){
-			if (transport && transport.responseText){
-				try{
-					response = eval('(' + transport.responseText + ')');
-				}
-				catch (e) {
-					response = {};
-				}
-			}
+        /**
+         This method recieves the AJAX response on success.
+         There are 3 options: error, redirect or html with shipping options.
+         */
+        nextStep: function (transport) {
+            if (transport && transport.responseText) {
+                try {
+                    response = eval('(' + transport.responseText + ')');
+                }
+                catch (e) {
+                    response = {};
+                }
+            }
 
-			if (response.error){
-				if ((typeof response.message) == 'string') {
-					alert(response.message);
-				} else {
-					alert(response.message.join("\n"));
-				}
+            if (response.error) {
+                if ((typeof response.message) == 'string') {
+                    alert(response.message);
+                } else {
+                    alert(response.message.join("\n"));
+                }
 
-				return false;
-			}
+                return false;
+            }
 
-			checkout.setStepResponse(response);
-		}
-	}
+            checkout.setStepResponse(response);
+        }
+    };
 
 	//<![CDATA[
 	var installment = new InstallmentClass('co-installment-form', '<?php echo $this->getUrl('checkout/onepage/saveInstallment') ?>');

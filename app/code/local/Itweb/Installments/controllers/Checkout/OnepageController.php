@@ -76,4 +76,16 @@ class Itweb_Installments_Checkout_OnepageController
 		}
 		$this->getResponse()->setBody(Mage::helper('core')->jsonEncode($result));
 	}
+
+    public function recalculateAction()
+    {
+        $_params = $this->getRequest()->getParams();
+        $_result = Itweb_Installments_Helper_Data::recalculateInstallment($_params);
+        if (!$_result) {
+            $_response['error'] = 'Can\'t load quote. Used default price calculation';
+        } else {
+            $_response['updateSummary'] = $this->getLayout()->createBlock('checkout/onepage')->setTemplate('installments/checkout/onepage/installment_summary.phtml')->toHtml();
+        }
+        $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($_response));
+    }
 }

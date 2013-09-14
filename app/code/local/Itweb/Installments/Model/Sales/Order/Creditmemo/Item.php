@@ -23,10 +23,10 @@ class Itweb_Installments_Model_Sales_Order_Creditmemo_Item
 					Mage::throwException('Item Is Not In THe Original Order!');
 				}
 
-				$PerPayment = $Breakdown[$this->getOrderItem()->getId()]['increment'];
+				/*$PerPayment = $Breakdown[$this->getOrderItem()->getId()]['increment'];
 				if ($qty % $PerPayment != 0){
 					Mage::throwException('Invalid Quantity For "' . $this->getOrderItem()->getName() . '", Must Be In Increments Of: ' . $PerPayment);
-				}
+				}*/
 			}
 
 			/**

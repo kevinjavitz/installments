@@ -6,49 +6,96 @@ $Breakdown = Itweb_Installments_Helper_Data::getInstallmentBreakdown($Quote);
 ?>
 
 <div class="entry-edit-head"><h4><?php echo $this->__('Your installments are listed below') ?></h4></div>
-<fieldset><div id="installments-summary">
-<?php if ($Quote->getUseInstallments() == Itweb_Installments_Helper_Data::PAY_INSTALLMENT && isset($Breakdown['installments']) && count($Breakdown['installments']) ) : ?>
-	<table class="installments-summary-table" id="installments-summary-table">
-		<thead>
-		<tr class="last">
-			<th class="a-center"></th>
-			<th class="a-center">Amount</th>
-			<th class="a-center">Paid When</th>
-		</tr>
-		</thead>
-		<tbody>
-		<?php
-		foreach($Breakdown['installments'] as $k => $toPay):
-			if ($k == 0){
-				$installmentText = 'Initial Installment';
-				$paidWhen = 'Now';
-			}
-			elseif ($k == (sizeof($Breakdown['installments']) - 1)) {
-				$installmentText = 'Final Installment';
-				$paidWhen = 'On Pickup';
-			}
-			else {
-				$installmentText = 'Installment #' . ($k+1);
-				$paidWhen = 'Later';
-			}
-			?>
-		<tr>
-			<td><?php echo $installmentText ?>:</td>
-			<td><?php
-				echo Mage::helper('core')->currency($toPay, true, false);
-				if ($k == 0 && $Breakdown['shipping_cost'] > 0){
-					echo sprintf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false));
-				}
-				echo sprintf(' + %s Est. Tax', Mage::helper('core')->currency($Breakdown['taxes'][$k], true, false));
-				?></td>
-			<td>Paid <?php echo $paidWhen ?></td>
-		</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
-<?php else: ?>
-<p><?php echo $this->__('No installments information.') ?></p>
-<?php endif; ?>
-</div></fieldset>
+<fieldset>
+    <div id="installments-summary">
+        <?php if ($Quote->getUseInstallments() == Itweb_Installments_Helper_Data::PAY_INSTALLMENT && isset($Breakdown['installments']) && count($Breakdown['installments'])): ?>
+            <input type="hidden" name="quote_id" value="<?php echo $Quote->getId(); ?>"/>
+            <input type="hidden" name="is_default" id="is_default" value="0"/>
+            <table class="installments-summary-table" id="installments-summary-table">
+                <thead>
+                <tr class="last">
+                    <th class="a-center"></th>
+                    <th class="a-center">Amount</th>
+                    <th class="a-center">Shipping and Est. Tax</th>
+                    <th class="a-center">Paid When</th>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                foreach ($Breakdown['installments'] as $k => $toPay):
+                    if ($k == 0) {
+                        $installmentText = 'Initial Installment';
+                        $paidWhen = 'Now';
+                    } elseif ($k == (sizeof($Breakdown['installments']) - 1)) {
+                        $installmentText = 'Final Installment';
+                        $paidWhen = 'On Pickup';
+                    } else {
+                        $installmentText = 'Installment #' . ($k + 1);
+                        $paidWhen = 'Later';
+                    }
+                    ?>
+                    <tr>
+                        <td><?php echo $installmentText ?>:</td>
+                        <td>
+                            <?php if (Mage::getStoreConfig(Itweb_Installments_Helper_Data::XML_PATH_ALLOW_ADMIN_INSTALLMENT_AMOUNT) && count($Breakdown['installments']) != 1 && $k != count($Breakdown['installments']) - 1): ?>
+                                <label for="installments-<?php echo $k ?>"><?php echo Mage::app()->getLocale()->currency(Mage::app()->getStore()->getCurrentCurrencyCode())->getSymbol(); ?></label>
+                                <input type="text" name="installment[]" id="installments-<?php echo $k ?>" class="installment-input" value="<?php echo $toPay ?>"/>
+                            <?php else: ?>
+                                <?php echo Mage::helper('core')->currency($toPay, true, false); ?>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php if ($k == 0 && $Breakdown['shipping_cost'] > 0): ?>
+                                <?php printf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false)); ?>
+                            <?php endif; ?>
+                            <?php printf(' + %s Est. Tax', Mage::helper('core')->currency($Breakdown['taxes'][$k], true, false)); ?></td>
+                        <td>Paid <?php echo $paidWhen ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <?php if (Mage::getStoreConfig(Itweb_Installments_Helper_Data::XML_PATH_ALLOW_ADMIN_INSTALLMENT_AMOUNT)): ?>
+                <div class="installment-update">
+                    <button id="recalc-installment" title="<?php echo $this->__('Recalculate Installments'); ?>" type="button" class="scalable recalculate" onclick="recalculateAmount(false)">
+                    <span>
+                        <span>
+                            <span><?php echo $this->__('Recalculate Installments'); ?></span>
+                        </span>
+                    </span>
+                    </button>
+                    <button id="recalc-installment-default" title="<?php echo $this->__('Set Default Installments'); ?>" type="button" class="scalable recalculate" onclick="recalculateAmount(true)">
+                    <span>
+                        <span>
+                            <span><?php echo $this->__('Set Default Installments'); ?></span>
+                        </span>
+                    </span>
+                    </button>
+                </div>
+            <?php endif; ?>
+
+        <?php else: ?>
+            <p><?php echo $this->__('No installments information.') ?></p>
+        <?php endif; ?>
+
+        <?php if (Mage::getStoreConfig(Itweb_Installments_Helper_Data::XML_PATH_ALLOW_ADMIN_INSTALLMENT_AMOUNT)): ?>
+            <script type="text/javascript">
+                recalculateAmount = function (isDefault) {
+                    if(isDefault) $('is_default').setValue(1);
+                    var installments = Form.getElements($('installments-summary'));
+                    new Ajax.Request('<?php echo $this->getUrl('installments/adminhtml_sales_order_create/recalculate') ?>', {
+                            parameters: Form.serializeElements(installments),
+                            method: 'post',
+                            evalScripts: true,
+                            onSuccess: onInstallmentSave,
+                            onFailure: function () {
+                                alert('<?php echo $this->__('Installment recalculation error') ?>');
+                            }
+                        }
+                    );
+                }
+            </script>
+        <?php endif; ?>
+    </div>
+</fieldset>
 
 

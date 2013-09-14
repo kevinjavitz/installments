@@ -10,6 +10,7 @@ $installer->startSetup();
 $decimalDefaults = array(
 	'default' => '0.0000'
 );
+$installer->getConnection()->dropTable($installer->getTable('installments/installments'));
 $table = $installer->getConnection()
 	->newTable($installer->getTable('installments/installments'))
 	->addColumn('installment_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null,
@@ -39,6 +40,7 @@ $installer->getConnection()->createTable($table);
 /**
  * Create the payment table
  */
+$installer->getConnection()->dropTable($installer->getTable('installments/installmentspayments'));
 $table = $installer->getConnection()
 	->newTable($installer->getTable('installments/installmentspayments'))
 	->addColumn('installment_payment_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null,
@@ -63,6 +65,7 @@ $installer->getConnection()->createTable($table);
 /**
  * Create the table that holds the invoice to payment relationship
  */
+$installer->getConnection()->dropTable($installer->getTable('installments/installmentspaymentsinvoices'));
 $table = $installer->getConnection()
 	->newTable($installer->getTable('installments/installmentspaymentsinvoices'))
 	->addColumn('installment_payment_invoice_id', Varien_Db_Ddl_Table::TYPE_INTEGER, null, array(

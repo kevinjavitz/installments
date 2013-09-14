@@ -198,6 +198,7 @@ class Itweb_Installments_Model_Installments
 	public function getStateLabel()
 	{
 		switch($this->getState()){
+            default:
 			case self::STATUS_OPEN:
 				return Mage::helper('sales')->__('Open');
 			case self::STATUS_CLOSED:

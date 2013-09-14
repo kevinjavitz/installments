@@ -97,7 +97,7 @@ else {
 						<tr class="<?php echo ($k % 2 ? 'even' : 'odd') ?><?php echo ($k == 0 ? ' first' : ($k == ($Installment->getNumOfInstallments() - 1) ? ' last' : '')) ?>">
 							<td>
 								<?php if ($Payment->isPaid() === false): ?>
-								<input type="checkbox" name="installment_payment[<?php echo $Installment->getOrder()->getId() ?>][]" value="<?php echo $Payment->getInstallmentPaymentId() ?>">
+								<input type="checkbox" name="installment_payment[<?php echo $Installment->getOrder()->getId() ?>][]" class="order-<?php echo $Installment->getOrder()->getId() ?>" value="<?php echo $Payment->getInstallmentPaymentId() ?>">
 								<?php endif; ?>
 							</td>
 							<td><?php echo ($k + 1) ?></td>
@@ -110,7 +110,28 @@ else {
 								?>
 							</td>
 							<td><em class="nobr"><?php echo $Payment->getStateHtml() ?></em></td>
-							<td class="last"><?php echo ($Payment->getUpdatedAt() > 0 ? Mage::helper('core')->formatDate($Payment->getUpdatedAt(), 'medium', false) : '') ?></td>
+							<td class="last"><?php echo ($Payment->getUpdatedAt() > 0 ? Mage::helper('core')->formatDate($Payment->getUpdatedAt(), 'medium', false) : '') ?>
+                            <script type="text/javascript">
+                                document.observe("dom:loaded", function(){
+                                    $$('.order-<?php echo $Installment->getOrder()->getId() ?>').each(function (element) {
+                                        element.observe('click', function (event) {
+                                            $$('.order-<?php echo $Installment->getOrder()->getId() ?>').each(function (elementCheck) {
+                                                if (element.checked) {
+                                                    if (elementCheck.value < element.value) {
+                                                        elementCheck.checked = element.checked;
+                                                    }
+                                                } else {
+                                                    if (elementCheck.value > element.value) {
+                                                        elementCheck.checked = element.checked;
+                                                    }
+                                                }
+                                            });
+                                            /*Event.stop(event);*/
+                                        })
+                                    });
+                                })
+                            </script>
+                            </td>
 						</tr>
 							<?php endforeach; ?>
 						</tbody>
@@ -183,7 +204,7 @@ else {
 	}
 
 	#loading-mask {
-		background : url(../images/blank.gif) repeat;
+		/*background : url(../images/blank.gif) repeat;*/
 		position    : absolute;
 		color       : #d85909;
 		font-size   : 1.1em;

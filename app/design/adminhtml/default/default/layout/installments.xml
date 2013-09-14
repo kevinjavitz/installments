@@ -15,8 +15,13 @@
 	</adminhtml_sales_order_view>
 	
 	<adminhtml_sales_order_create_index>
+        <reference name="head">
+            <action method="addCss">
+                <name>installments/style.css</name>
+            </action>
+        </reference>
 		<reference name="js">
-			<block type="core/template" name="installments.form" template="installments/sales/order/create/form.phtml"></block>
+			<block type="core/template" name="installments.form" template="installments/sales/order/create/form.phtml" />
 		</reference>
 		<reference name="data">
             <action method="setTemplate">
@@ -25,7 +30,7 @@
 			<block type="installments/adminhtml_sales_order_create_installments" template="sales/order/create/abstract.phtml" name="installments">
 				<block type="installments/adminhtml_sales_order_create_installments_form" template="installments/sales/order/create/installments/form.phtml" name="form" />
 			</block>
-			<block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary"></block>
+			<block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary" />
         </reference>
 	</adminhtml_sales_order_create_index>
 	
@@ -37,13 +42,13 @@
 			<block type="installments/adminhtml_sales_order_create_installments" template="sales/order/create/abstract.phtml" name="installments">
 				<block type="installments/adminhtml_sales_order_create_installments_form" template="installments/sales/order/create/installments/form.phtml" name="form" />
 			</block>
-			<block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary"></block>
+			<block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary" />
         </reference>
 	</adminhtml_sales_order_create_load_block_data>
 	
 	<adminhtml_sales_order_create_load_block_installments_summary>
         <reference name="content">
-            <block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary"></block>
+            <block type="installments/adminhtml_sales_order_create_installments_summary" template="installments/sales/order/create/installments/summary.phtml" name="installments_summary" />
         </reference>
     </adminhtml_sales_order_create_load_block_installments_summary>
 	

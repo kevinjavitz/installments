@@ -74,5 +74,6 @@ class Itweb_Installments_Model_Sales_Order_Payment
 			}
 			return $transaction;
 		}
+        return null;
 	}
 }

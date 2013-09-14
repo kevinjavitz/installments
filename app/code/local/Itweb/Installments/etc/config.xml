@@ -2,7 +2,7 @@
 <config>
 	<modules>
 		<Itweb_Installments>
-			<version>0.1.0</version>
+			<version>0.1.0.2</version>
 		</Itweb_Installments>
 	</modules>
 	<frontend>
@@ -37,13 +37,34 @@
 					<pending_installment translate="label">
 						<label>Pending Installment Completion</label>
 					</pending_installment>
+                    <installments_paid translate="label">
+                        <label>Paid</label>
+                    </installments_paid>
 				</statuses>
 				<states>
 					<pending_payment>
 						<statuses>
-							<pending_installment/>
+							<pending_installment default="1"/>
 						</statuses>
+                        <visible_on_front>1</visible_on_front>
 					</pending_payment>
+                    <pending_installment>
+                        <statuses>
+                            <pending_installment default="1"/>
+                            <processing/>
+                            <cancelled/>
+                            <installments_paid/>
+                        </statuses>
+                        <visible_on_front>1</visible_on_front>
+                    </pending_installment>
+                    <installments_paid>
+                        <statuses>
+                            <installments_paid default="1"/>
+                            <processing/>
+                            <cancelled/>
+                        </statuses>
+                        <visible_on_front>1</visible_on_front>
+                    </installments_paid>
 				</states>
 			</order>
 		</sales>
@@ -80,6 +101,9 @@
 					<installmentspaymentsinvoices>
 						<table>itweb_installments_payments_invoices</table>
 					</installmentspaymentsinvoices>
+                    <installmentscalculation>
+                        <table>itweb_installments_calculation</table>
+                    </installmentscalculation>
 				</entities>
 			</installments_mysql4>
 			<checkout>
@@ -188,39 +212,6 @@
 		</routers>
 	</admin>
 	<adminhtml>
-		<menu>
-			<installments module="installments">
-				<title>Installments</title>
-				<sort_order>100</sort_order>
-				<children>
-					<installmentsbackend module="installments">
-						<title>View Installments</title>
-						<sort_order>0</sort_order>
-						<action>installments/adminhtml_installmentsbackend</action>
-					</installmentsbackend>
-				</children>
-			</installments>
-		</menu>
-		<acl>
-			<resources>
-				<all>
-					<title>Allow Everything</title>
-				</all>
-				<admin>
-					<children>
-						<installments translate="title" module="installments">
-							<title>Installments</title>
-							<sort_order>1000</sort_order>
-							<children>
-								<installmentsbackend translate="title">
-									<title>Backend Page Title</title>
-								</installmentsbackend>
-							</children>
-						</installments>
-					</children>
-				</admin>
-			</resources>
-		</acl>
 		<layout>
 			<updates>
 				<installments>

@@ -129,11 +129,11 @@
 <script type="text/javascript">
     function print_r(theObj){
         if(theObj.constructor == Array || theObj.constructor == Object){
-            document.write("<ul>")
+            document.write("<ul>");
             for(var p in theObj){
                 if(theObj[p].constructor == Array || theObj[p].constructor == Object){
                     document.write("<li>["+p+"] => "+typeof(theObj)+"</li>");
-                    document.write("<ul>")
+                    document.write("<ul>");
                     print_r(theObj[p]);
                     document.write("</ul>")
                 } else {
@@ -287,7 +287,7 @@
 
                                 // Add special div to hold mage data, e.g. scripts to execute on every popup show
                                 var mageData = {};
-                                var scripts = response.extractScripts();
+                                scripts = response.extractScripts();
                                 mageData.scripts = scripts;
 
                                 var scriptHolder = new Element('div', {'style': 'display:none'});
@@ -316,12 +316,6 @@
 );
 </script>
     <style type="text/css">
-        button.Zebra_DatePicker_Icon{
-            text-indent: 0px;
-        }
-        .Zebra_DatePicker{
-            z-index:10000;
-        }
         .datesInputsTop{
             display: none;
         }

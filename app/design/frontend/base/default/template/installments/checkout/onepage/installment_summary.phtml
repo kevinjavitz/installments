@@ -5,46 +5,95 @@ $Total = $Quote->getGrandTotal();
 $Breakdown = Itweb_Installments_Helper_Data::getInstallmentBreakdown($Quote);
 ?>
 <div id="checkout-review-installments-summary">
-	<br><br>
-	<table class="data-table" id="checkout-review-table">
-		<thead>
-		<tr class="first">
-			<th colspan="3" class="a-center">Your installments are listed below</th>
-		</tr>
-		<tr class="last">
-			<th class="a-center"></th>
-			<th class="a-center">Amount</th>
-			<th class="a-center">Paid When</th>
-		</tr>
-		</thead>
-		<tbody>
-		<?php
-		foreach($Breakdown['installments'] as $k => $toPay):
-			if ($k == 0){
-				$installmentText = 'Initial Installment';
-				$paidWhen = 'Now';
-			}
-			elseif ($k == (sizeof($Breakdown['installments']) - 1)) {
-				$installmentText = 'Final Installment';
-				$paidWhen = 'On Pickup';
-			}
-			else {
-				$installmentText = 'Installment #' . ($k+1);
-				$paidWhen = 'Later';
-			}
-			?>
-		<tr>
-			<td><?php echo $installmentText ?>:</td>
-			<td><?php
-				echo Mage::helper('core')->currency($toPay, true, false);
-				if ($k == 0 && $Breakdown['shipping_cost'] > 0){
-					echo sprintf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false));
-				}
-				echo sprintf(' + %s Est. Tax', Mage::helper('core')->currency($Breakdown['taxes'][$k], true, false));
-				?></td>
-			<td>Paid <?php echo $paidWhen ?></td>
-		</tr>
-			<?php endforeach; ?>
-		</tbody>
-	</table>
+    <input type="hidden" name="quote_id" value="<?php echo $Quote->getId(); ?>"/>
+    <input type="hidden" name="is_default" id="is_default" value="0"/>
+    <table class="data-table checkout-review-table-installment" id="checkout-review-table-installment">
+        <thead>
+        <tr class="first">
+            <th colspan="4" class="a-center">Your installments are listed below</th>
+        </tr>
+        <tr class="last">
+            <th class="a-center"></th>
+            <th class="a-center">Amount</th>
+            <th class="a-center">Shipping and Est. Tax</th>
+            <th class="a-center">Paid When</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        foreach ($Breakdown['installments'] as $k => $toPay):
+            if ($k == 0) {
+                $installmentText = 'Initial Installment';
+                $paidWhen = 'Now';
+            } elseif ($k == (sizeof($Breakdown['installments']) - 1)) {
+                $installmentText = 'Final Installment';
+                $paidWhen = 'On Pickup';
+            } else {
+                $installmentText = 'Installment #' . ($k + 1);
+                $paidWhen = 'Later';
+            }
+            ?>
+            <tr>
+                <td><?php echo $installmentText ?>:</td>
+                <td>
+                    <?php if (Mage::getStoreConfig(Itweb_Installments_Helper_Data::XML_PATH_ALLOW_ADMIN_INSTALLMENT_AMOUNT) && count($Breakdown['installments']) != 1 && $k != count($Breakdown['installments']) - 1): ?>
+                        <label for="installments-<?php echo $k ?>"><?php echo Mage::app()->getLocale()->currency(Mage::app()->getStore()->getCurrentCurrencyCode())->getSymbol(); ?></label>
+                        <input type="text" name="installment[]" id="installments-<?php echo $k ?>" class="installment-input" value="<?php echo $toPay ?>"/>
+                    <?php else: ?>
+                        <?php echo Mage::helper('core')->currency($toPay, true, false); ?>
+                    <?php endif; ?>
+                </td>
+                <td><?php if ($k == 0 && $Breakdown['shipping_cost'] > 0): ?>
+                        <?php printf(' + %s Shipping', Mage::helper('core')->currency($Breakdown['shipping_cost'], true, false)); ?>
+                    <?php endif; ?>
+                    <?php printf(' + %s Est. Tax', Mage::helper('core')->currency($Breakdown['taxes'][$k], true, false)); ?></td>
+                <td>Paid <?php echo $paidWhen ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php if (Mage::getStoreConfig(Itweb_Installments_Helper_Data::XML_PATH_ALLOW_CUSTOMER_INSTALLMENT_AMOUNT)): ?>
+        <div class="installment-update">
+            <button id="recalc-installment" title="<?php echo $this->__('Recalculate Installments'); ?>" type="button" class="button recalculate" onclick="recalculateAmount(false)">
+                    <span>
+                        <span>
+                            <span><?php echo $this->__('Recalculate Installments'); ?></span>
+                        </span>
+                    </span>
+            </button>
+            <button id="recalc-installment-default" title="<?php echo $this->__('Set Default Installments'); ?>" type="button" class="button recalculate" onclick="recalculateAmount(true)">
+                    <span>
+                        <span>
+                            <span><?php echo $this->__('Set Default Installments'); ?></span>
+                        </span>
+                    </span>
+            </button>
+        </div>
+        <script type="text/javascript">
+            recalculateAmount = function (isDefault) {
+                if(isDefault) $('is_default').setValue(1);
+                var installments = Form.getElements($('checkout-review-installments-summary'));
+                new Ajax.Request('<?php echo $this->getUrl('checkout/onepage/recalculate') ?>', {
+                        parameters: Form.serializeElements(installments),
+                        method: 'post',
+                        evalScripts: false,
+                        onSuccess: function(transport) {
+                            var response = transport.responseText.evalJSON();
+                            console.log(response);
+                            console.log(response.updateSummary);
+                            if(response.error !== undefined){
+                                alert(response.error);
+                            } else if(response.updateSummary !== undefined) {
+                                $('checkout-review-installments-summary').remove();
+                                $('checkout-review-table-wrapper').insert({after: response.updateSummary});
+                            }
+                        },
+                        onFailure: function () {
+                            alert('<?php echo $this->__('Installment recalculation error') ?>');
+                        }
+                    }
+                );
+            };
+        </script>
+    <?php endif; ?>
 </div>
