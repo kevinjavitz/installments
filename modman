@@ -1,0 +1,10 @@
+app/code/local/Itweb/Installments/ app/code/local/Itweb/Installments/
+app/code/local/ParadoxLabs/AuthorizeNetCim/Model/Onepage.php app/code/local/ParadoxLabs/AuthorizeNetCim/Model/Onepage.php
+app/design/adminhtml/default/default/layout/installments.xml app/design/adminhtml/default/default/layout/installments.xml
+app/design/adminhtml/default/default/template/installments/ app/design/adminhtml/default/default/template/installments/
+app/design/frontend/base/default/layout/installments.xml app/design/frontend/base/default/layout/installments.xml
+app/design/frontend/base/default/template/installments/ app/design/frontend/base/default/template/installments/
+app/etc/modules/Itweb_Installments.xml app/etc/modules/Itweb_Installments.xml
+skin/adminhtml/default/default/installments skin/adminhtml/default/default/installments
+skin/frontend/base/default/installments skin/frontend/base/default/installments
+skin/adminhtml/default/default/images/sales_igniter skin/adminhtml/default/default/images/sales_igniter
