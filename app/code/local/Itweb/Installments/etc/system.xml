@@ -1,11 +1,20 @@
 <?xml version="1.0"?>
 <config>
+    <tabs>
+        <sales_igniter_tab translate="label">
+            <label><![CDATA[<div style="position: absolute;"><img id="si_block" src="" alt="" border="0" /></div>&nbsp;<script>
+            var n = SKIN_URL.indexOf("adminhtml");
+            $('si_block').src = SKIN_URL.substring(0, n) + "adminhtml/default/default/images/sales_igniter/si_system_logo.png";
+            </script>]]></label>
+            <sort_order>280</sort_order>
+        </sales_igniter_tab>
+    </tabs>
 	<sections>
 		<installments translate="label" module="installments">
 			<label>Installments</label>
-			<tab>sales</tab>
+			<tab>sales_igniter_tab</tab>
 			<frontend_type>text</frontend_type>
-			<sort_order>0</sort_order>
+			<sort_order>110</sort_order>
 			<show_in_default>1</show_in_default>
 			<show_in_website>1</show_in_website>
 			<show_in_store>1</show_in_store>
