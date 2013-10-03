@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<config>
+    <tabs>
+        <sales_igniter_tab translate="label">
+            <label><![CDATA[<div style="position: absolute;"><img id="si_block" src="" alt="" border="0" /></div>&nbsp;<script>
+            var n = SKIN_URL.indexOf("adminhtml");
+            $('si_block').src = SKIN_URL.substring(0, n) + "adminhtml/default/default/images/sales_igniter/si_system_logo.png";
+            </script>]]></label>
+            <sort_order>280</sort_order>
+        </sales_igniter_tab>
+    </tabs>
+    <sections>
+        <installments translate="label" module="installments">
+            <label>Installments</label>
+            <tab>sales_igniter_tab</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>110</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <defaults translate="label">
+                    <label>Defaults</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>0</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <max_installments translate="label">
+                            <label>Maximum Number Of Installments</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>0</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Maximum Number Of Allowed Installments</comment>
+                        </max_installments>
+                        <allow_admin_installment_amount translate="label">
+                            <label><![CDATA[Allow Admin to Enter Installment Amount]]></label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </allow_admin_installment_amount>
+                        <allow_customer_installment_amount translate="label">
+                            <label><![CDATA[Allow Customer to Enter Installment Amount]]></label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </allow_customer_installment_amount>
+                    </fields>
+                </defaults>
+                <export translate="label">
+                    <label>Admin Grid Export Settings</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>0</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <fields>
+                        <breakdown_payment_method translate="label">
+                            <label>Show Payment Method</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>0</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Show Columns That Will Display The Payment Method Used</comment>
+                        </breakdown_payment_method>
+                        <breakdown_payment_method_card translate="label">
+                            <label>Show Credit Card Types</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Include The Credit Card Types For Credit Card Payment Methods (Requires Show Payment Method To Be Yes)</comment>
+                        </breakdown_payment_method_card>
+                        <breakdown_payment_method_card_exclude translate="label">
+                            <label>Ignore Credit Card Types</label>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>adminhtml/system_config_source_payment_cctype</source_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Exclude The Selected Credit Card Types From The Export (Requires Show Credit Card Types To Be Yes)</comment>
+                        </breakdown_payment_method_card_exclude>
+                        <breakdown_payment_method_card_combine translate="label">
+                            <label>Combine Credit Cards</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Combine Credit Card Payment Methods Under A Common Heading (Requires Show Payment Method To Be Yes)</comment>
+                        </breakdown_payment_method_card_combine>
+                        <breakdown_store_name translate="label">
+                            <label>Show Amount Per Store</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Add Columns For The Stores And Populate Them With The Totals</comment>
+                        </breakdown_store_name>
+                    </fields>
+                </export>
+            </groups>
+        </installments>
+    </sections>
+</config>

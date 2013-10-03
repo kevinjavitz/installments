@@ -1,4 +1,4 @@
-app/code/local/Itweb/Installments/ app/code/local/Itweb/Installments/
+app/code/community/Itweb/Installments/ app/code/community/Itweb/Installments/
 app/code/local/ParadoxLabs/AuthorizeNetCim/Model/Onepage.php app/code/local/ParadoxLabs/AuthorizeNetCim/Model/Onepage.php
 app/design/adminhtml/default/default/layout/installments.xml app/design/adminhtml/default/default/layout/installments.xml
 app/design/adminhtml/default/default/template/installments/ app/design/adminhtml/default/default/template/installments/
